@@ -65,14 +65,13 @@ createProduct: async (newProduct) => {
             return { success: false, message: error.message || "An error occurred" };
         }
     },
-    updateProduct: async (pid, updatedProduct) => {
+updateProduct: async (pid, updatedProduct) => {
         try {
+            const isFormData = updatedProduct instanceof FormData;
             const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(updatedProduct),
+                headers: isFormData ? {} : { "Content-Type": "application/json" },
+                body: isFormData ? updatedProduct : JSON.stringify(updatedProduct),
             });
 
             if (!res.ok) {

@@ -41,23 +41,37 @@ const showToast = (type, title, message) => {
 // UpdateProductDialog component for updating product details
 const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
   const [updatedProduct, setUpdatedProduct] = useState({});
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (isOpen && product) {
       setUpdatedProduct(product);
+      setSelectedImage(null);
     }
   }, [isOpen, product]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedProduct((prev) => ({
-      ...prev,
-      [name]: name === "price" ? Number(value) : value,
-    }));
+    const { name, value, files } = e.target;
+    if (name === "image" && files && files.length > 0) {
+      setSelectedImage(files[0]);
+    } else {
+      setUpdatedProduct((prev) => ({
+        ...prev,
+        [name]: name === "price" ? Number(value) : value,
+      }));
+    }
   };
 
   const handleUpdateClick = () => {
-    onUpdate(product._id, updatedProduct);
+    if (selectedImage) {
+      const formData = new FormData();
+      formData.append("name", updatedProduct.name);
+      formData.append("price", updatedProduct.price);
+      formData.append("image", selectedImage);
+      onUpdate(product._id, formData);
+    } else {
+      onUpdate(product._id, updatedProduct);
+    }
     onClose();
   };
 
@@ -106,9 +120,9 @@ const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
                   onChange={handleChange}
                 />
                 <Input
-                  placeholder="Image URL"
+                  type="file"
+                  accept="image/*"
                   name="image"
-                  value={updatedProduct.image || ""}
                   onChange={handleChange}
                 />
               </VStack>
