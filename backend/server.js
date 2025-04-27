@@ -18,9 +18,9 @@ const __dirname = path.resolve();
 
 // Middleware setup function
 function setupMiddleware() {
-  // Enable CORS for requests coming from http://localhost:5173
+  // Enable CORS for requests coming from your Netlify frontend domain
   const corsOptions = {
-    origin: 'http://localhost:5173',
+    origin: ['https://nilanicraftgallory.com', 'http://localhost:5173'],
   };
   app.use(cors(corsOptions));
 

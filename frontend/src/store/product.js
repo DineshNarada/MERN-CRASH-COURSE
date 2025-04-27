@@ -1,3 +1,6 @@
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 import {create} from "zustand";
 
 export const useProductStore = create((set) => ({
@@ -8,7 +11,7 @@ export const useProductStore = create((set) => ({
           return { success: false, message: "Please provide all fields!" };
         }
         try {         
-            const res = await fetch("/api/products", {
+            const res = await fetch(`${API_BASE_URL}/api/products`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -25,12 +28,12 @@ export const useProductStore = create((set) => ({
         }
     },
     fetchProducts: async () => {
-        const res = await fetch("/api/products");
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         const data = await res.json();
         set({ products: data.data });
     },
     deleteProduct: async (pid) => {
-        const res = await fetch(`/api/products/${pid}`, {
+        const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
             method: "DELETE",
         });
         const data = await res.json();
@@ -42,7 +45,7 @@ export const useProductStore = create((set) => ({
     },
     updateProduct: async (pid, updatedProduct) => {
         try {
-          const res = await fetch(`/api/products/${pid}`, {
+          const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
