@@ -1,7 +1,15 @@
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 import {create} from "zustand";
+
+async function safeJsonResponse(response) {
+    try {
+        const text = await response.text();
+        return text ? JSON.parse(text) : {};
+    } catch {
+        return {};
+    }
+}
 
 export const useProductStore = create((set) => ({
     products: [],
@@ -10,7 +18,7 @@ export const useProductStore = create((set) => ({
         if (!newProduct.name || !newProduct.price || !newProduct.image) {
           return { success: false, message: "Please provide all fields!" };
         }
-        try {         
+        try {
             const res = await fetch(`${API_BASE_URL}/api/products`, {
                 method: "POST",
                 headers: {
@@ -19,55 +27,73 @@ export const useProductStore = create((set) => ({
                 body: JSON.stringify(newProduct),
             });
 
-            const data = await res.json();
+            if (!res.ok) {
+                const errorData = await safeJsonResponse(res);
+                return { success: false, message: errorData.message || "Failed to create product" };
+            }
+
+            const data = await safeJsonResponse(res);
             set((state) => ({ products: [...state.products, data.data] }));
             return { success: true, message: "Product created successfully" };
         } catch (error) {
-            // Catch fetch or JSON parsing errors
             return { success: false, message: error.message || "An error occurred" };
         }
     },
     fetchProducts: async () => {
-        const res = await fetch(`${API_BASE_URL}/api/products`);
-        const data = await res.json();
-        set({ products: data.data });
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/products`);
+            if (!res.ok) {
+                return;
+            }
+            const data = await safeJsonResponse(res);
+            set({ products: data.data || [] });
+        } catch {
+            // ignore errors here
+        }
     },
     deleteProduct: async (pid) => {
-        const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
-            method: "DELETE",
-        });
-        const data = await res.json();
-        if(!data.success) return { success: false, message: data.message };
-
-        // Update the products state by filtering out the deleted product
-        set(state => ({ products: state.products.filter(product => product._id !== pid) }));
-        return { success: true, message: data.message };
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
+                method: "DELETE",
+            });
+            if (!res.ok) {
+                const errorData = await safeJsonResponse(res);
+                return { success: false, message: errorData.message || "Failed to delete product" };
+            }
+            const data = await safeJsonResponse(res);
+            set(state => ({ products: state.products.filter(product => product._id !== pid) }));
+            return { success: true, message: data.message || "Product deleted" };
+        } catch (error) {
+            return { success: false, message: error.message || "An error occurred" };
+        }
     },
     updateProduct: async (pid, updatedProduct) => {
         try {
-          const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedProduct),
-          });
-    
-          const data = await res.json();
-          if (!res.ok || !data.success)
-            return { success: false, message: data.message };
-    
-          set((state) => ({
-            products: state.products.map((product) =>
-              product._id === pid ? data.data : product
-            ),
-          }));
-          return { success: true, message: "Product updated successfully" };
+            const res = await fetch(`${API_BASE_URL}/api/products/${pid}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updatedProduct),
+            });
+
+            if (!res.ok) {
+                const errorData = await safeJsonResponse(res);
+                return { success: false, message: errorData.message || "Failed to update product" };
+            }
+
+            const data = await safeJsonResponse(res);
+            set((state) => ({
+                products: state.products.map((product) =>
+                    product._id === pid ? data.data : product
+                ),
+            }));
+            return { success: true, message: "Product updated successfully" };
         } catch (error) {
-          return {
-            success: false,
-            message: error.message || "Update failed unexpectedly",
-          };
+            return {
+                success: false,
+                message: error.message || "Update failed unexpectedly",
+            };
         }
-      },  
+    },
 }));
