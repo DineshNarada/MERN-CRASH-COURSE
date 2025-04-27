@@ -38,24 +38,26 @@ function setupRoutes() {
   }
 
   try {
-    // Serve frontend static files and catch-all route in all environments
-    const distPath = path.join(__dirname, '/frontend/dist');
-    if (fs.existsSync(distPath)) {
-      console.log('Serving static frontend files from:', distPath);
-      app.use(express.static(distPath));
-      // Serve product images statically from /uploads
-      const uploadsPath = path.join(__dirname, '/uploads');
-      if (fs.existsSync(uploadsPath)) {
-        console.log('Serving static uploads files from:', uploadsPath);
-        app.use('/uploads', express.static(uploadsPath));
+    // Serve frontend static files and catch-all route only in local development
+    if (process.env.NODE_ENV !== 'production') {
+      const distPath = path.join(__dirname, '/frontend/dist');
+      if (fs.existsSync(distPath)) {
+        console.log('Serving static frontend files from:', distPath);
+        app.use(express.static(distPath));
+        // Serve product images statically from /uploads
+        const uploadsPath = path.join(__dirname, '/uploads');
+        if (fs.existsSync(uploadsPath)) {
+          console.log('Serving static uploads files from:', uploadsPath);
+          app.use('/uploads', express.static(uploadsPath));
+        } else {
+          console.warn('⚠️ Warning: uploads directory not found. Skipping uploads static file serving.');
+        }
+        app.get('*', (req, res) => {
+          res.sendFile(path.resolve(distPath, 'index.html'));
+        });
       } else {
-        console.warn('⚠️ Warning: uploads directory not found. Skipping uploads static file serving.');
+        console.warn('⚠️ Warning: frontend/dist not found. Skipping static file serving.');
       }
-      app.get('*', (req, res) => {
-        res.sendFile(path.resolve(distPath, 'index.html'));
-      });
-    } else {
-      console.warn('⚠️ Warning: frontend/dist not found. Skipping static file serving.');
     }
   } catch (err) {
     console.error('Error setting up static file serving:', err);
