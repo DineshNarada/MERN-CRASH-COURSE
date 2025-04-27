@@ -12,18 +12,23 @@ export const getProducts = async (req, res) => {
 }
 
 export const createProduct = async (req, res) => {
-    const product = req.body; //User input data
+    const { name, price } = req.body; //User input data
+    const file = req.file;
 
-    if(!product.name || !product.price || !product.image) {
-        return res.status(400).json({ success:false, message: "Please provide all the fields!" });
+    if (!name || !price || !file) {
+        return res.status(400).json({ success: false, message: "Please provide all the fields!" });
     }
 
-    const newProduct = new Product(product); // Create a new product instance
+    const newProduct = new Product({
+        name,
+        price,
+        image: file.path, // Save the file path in the image field
+    });
 
     try {
         await newProduct.save(); // Save the product to the database
         res.status(201).json({ success: true, data: newProduct });
-    }catch (error) {
+    } catch (error) {
         console.error("Error creating product:", error);
         res.status(500).json({ success: false, message: "Server error!", error: error.message });
     }

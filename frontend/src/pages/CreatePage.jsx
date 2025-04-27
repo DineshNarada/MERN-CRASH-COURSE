@@ -8,14 +8,24 @@ const CreatePage = () => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    image: "",
+    image: null,
   });
 
 const {createProduct} = useProductStore();
 const handleAddProduct = async() => {
-const {success,message} = await createProduct(newProduct);
-  console.log("Success",success);
-  console.log("Message",message);
+  if (!newProduct.name || !newProduct.price || !newProduct.image) {
+    toast.error("Please fill all fields including image.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", newProduct.name);
+  formData.append("price", newProduct.price);
+  formData.append("image", newProduct.image);
+
+  const {success, message} = await createProduct(formData);
+  console.log("Success", success);
+  console.log("Message", message);
 
   if (success) {
     toast.success(
@@ -33,7 +43,7 @@ const {success,message} = await createProduct(newProduct);
     setNewProduct({
       name: "",
       price: "",
-      image: "",
+      image: null,
     });// ✅ Reset form only on success
 
   } else {
@@ -88,10 +98,10 @@ const {success,message} = await createProduct(newProduct);
                   onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
                 
                 <Input 
-                  placeholder="Image URL"
+                  type="file"
+                  accept="image/*"
                   name="image"                  
-                  value={newProduct.image}
-                  onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })} />
+                  onChange={(e) => setNewProduct({ ...newProduct, image: e.target.files[0] })} />
                                   
                   <Button colorScheme='blue' w='full' onClick={handleAddProduct}>
                     Add Product

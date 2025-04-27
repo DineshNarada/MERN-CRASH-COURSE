@@ -14,17 +14,15 @@ async function safeJsonResponse(response) {
 export const useProductStore = create((set) => ({
     products: [],
     setProducts: (products) => set({ products }),
-    createProduct: async (newProduct) => {
-        if (!newProduct.name || !newProduct.price || !newProduct.image) {
+createProduct: async (newProduct) => {
+        if (!newProduct.get("name") || !newProduct.get("price") || !newProduct.get("image")) {
           return { success: false, message: "Please provide all fields!" };
         }
         try {
             const res = await fetch(`${API_BASE_URL}/api/products`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(newProduct),
+                // Do not set Content-Type header for FormData, browser will set it automatically
+                body: newProduct,
             });
 
             if (!res.ok) {
