@@ -1,5 +1,5 @@
-import { Container, Box, Button, Heading, Input, VStack,} from "@chakra-ui/react";
-import { useState } from "react";
+import { Container, Button, Heading, Input, VStack, HStack, Box } from "@chakra-ui/react";
+import { useState, useRef } from "react";
 import { useColorModeValue } from "../components/ui/color-mode";
 import { useProductStore } from "../store/product";
 import { toast } from "react-hot-toast";
@@ -16,6 +16,8 @@ const CreatePage = () => {
   // Cloudinary unsigned upload preset and URL (replace with your own)
   const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dna7polgw/image/upload";
   const CLOUDINARY_UPLOAD_PRESET = "ncg_preset"; // Unsigned upload preset name
+
+  const fileInputRef = useRef(null);
 
   const uploadImageToCloudinary = async (file) => {
     const formData = new FormData();
@@ -104,16 +106,19 @@ const CreatePage = () => {
         <Heading as="h1" size="2xl" textAlign="center" mb={8}>
           Create New Product
         </Heading>
+        
 
-        <Box
-          w={{ base: "100%", md: "75%", lg: "50%" }}
-          p={{ base: 4, md: 6 }}
+      
+        <Box 
+          borderWidth="1px" 
+          borderRadius="md" 
+          p={4} 
+          borderColor={useColorModeValue("gray.200", "gray.600")} 
           bg={useColorModeValue("white", "gray.700")}
-          rounded="lg"
-          shadow={"md"}
-          borderRadius="md"
-          mx="auto"
-        >
+          w={{ base: "100%", md: "75%", lg: "50%" }} 
+          mx="auto">
+          
+
           <VStack spacing={4}>
             <Input
               placeholder="Product Name"
@@ -126,7 +131,7 @@ const CreatePage = () => {
 
             <Input
               placeholder="price"
-              name="price"
+              name="Product Price"
               type="number"
               value={newProduct.price}
               onChange={(e) =>
@@ -134,12 +139,19 @@ const CreatePage = () => {
               }
             />
 
-            <Input
-              type="file"
-              accept="image/*"
-              name="image"
-              onChange={handleImageChange}
-            />
+            <HStack w="full" justify="flex-end">
+              <Input
+                type="file"
+                accept="image/*"
+                name="image"
+                onChange={handleImageChange}
+                ref={fileInputRef}
+                display="none"
+              />
+              <Button onClick={() => fileInputRef.current.click()}>
+                Upload Image
+              </Button>
+            </HStack>
 
             <Button colorScheme="blue" w="full" onClick={handleAddProduct}>
               Add Product

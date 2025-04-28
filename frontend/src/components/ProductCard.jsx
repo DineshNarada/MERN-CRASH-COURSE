@@ -3,7 +3,7 @@ import { useColorModeValue } from "./ui/color-mode";
 import { MdDelete, MdEdit, MdClose } from "react-icons/md";
 import { useProductStore } from "../store/product";
 import { toast } from "react-hot-toast";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Helper function to show toast notifications
 const showToast = (type, title, message) => {
@@ -42,6 +42,7 @@ const showToast = (type, title, message) => {
 const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
   const [updatedProduct, setUpdatedProduct] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && product) {
@@ -88,18 +89,19 @@ const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
             borderRadius="md"
           >
             <IconButton
-              aria-label="Close"              
+              aria-label="Close"
               position="absolute"
               top={2}
-              right={2}              
+              right={2}
               onClick={onClose}
-              size={'1xl'}
-              color="red.500"              
+              size={"1xl"}
+              color="red.500"
               bg={"gray.100"}
-              _hover={{ bg: "red.500", color: "white" }}            
+              _hover={{ bg: "red.500", color: "white" }}
               rounded="1xl"
-              >{<MdClose />}
-              </IconButton>
+            >
+              {<MdClose />}
+            </IconButton>
 
             <Dialog.Header>
               <Dialog.Title>Update Product</Dialog.Title>
@@ -119,12 +121,19 @@ const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
                   value={updatedProduct.price || ""}
                   onChange={handleChange}
                 />
-                <Input
-                  type="file"
-                  accept="image/*"
-                  name="image"
-                  onChange={handleChange}
-                />
+                <HStack w="full" justify="flex-end">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    name="image"
+                    onChange={handleChange}
+                    ref={fileInputRef}
+                    display="none"
+                  />
+                  <Button onClick={() => fileInputRef.current.click()}>
+                    Upload Image
+                  </Button>
+                </HStack>
               </VStack>
             </Dialog.Body>
             <Dialog.Footer>
@@ -202,7 +211,7 @@ const ProductCard = ({ product }) => {
           </Heading>
 
           <Text fontWeight="bold" fontSize="xl" color={textColor} mb={4}>
-            ${product.price}
+            {new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(product.price)}
           </Text>
 
           <HStack spacing={2}>
@@ -227,6 +236,7 @@ const ProductCard = ({ product }) => {
             </IconButton>
           </HStack>
         </Box>
+
       </Box>
 
       <UpdateProductDialog
