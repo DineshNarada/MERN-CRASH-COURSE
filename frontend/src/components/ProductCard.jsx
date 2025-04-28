@@ -109,18 +109,41 @@ const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
             <Dialog.Body>
               <VStack spacing={4}>
                 <Input
-                  placeholder="Product Name"
+                  placeholder="Product Name:"
                   name="name"
                   value={updatedProduct.name || ""}
                   onChange={handleChange}
                 />
                 <Input
-                  placeholder="Price"
+                  placeholder="Price:"
                   name="price"
                   type="number"
                   value={updatedProduct.price || ""}
                   onChange={handleChange}
                 />
+
+                {/* Image preview box */}
+                {(selectedImage || updatedProduct.image) && (
+                  <Box
+                    maxW="200px"
+                    maxH="200px"
+                    mx="auto"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    overflow="hidden"
+                  >
+                    <img
+                      src={
+                        selectedImage
+                          ? URL.createObjectURL(selectedImage)
+                          : updatedProduct.image
+                      }
+                      alt="Preview"
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                    />
+                  </Box>
+                )}
+
                 <HStack w="full" justify="flex-end">
                   <Input
                     type="file"
@@ -131,7 +154,7 @@ const UpdateProductDialog = ({ product, isOpen, onClose, onUpdate }) => {
                     display="none"
                   />
                   <Button onClick={() => fileInputRef.current.click()}>
-                    Upload Image
+                    Change Image
                   </Button>
                 </HStack>
               </VStack>

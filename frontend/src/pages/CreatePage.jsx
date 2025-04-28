@@ -106,22 +106,19 @@ const CreatePage = () => {
         <Heading as="h1" size="2xl" textAlign="center" mb={8}>
           Create New Product
         </Heading>
-        
 
-      
-        <Box 
-          borderWidth="1px" 
-          borderRadius="md" 
-          p={4} 
-          borderColor={useColorModeValue("gray.200", "gray.600")} 
+        <Box
+          borderWidth="1px"
+          borderRadius="md"
+          p={4}
+          borderColor={useColorModeValue("gray.200", "gray.600")}
           bg={useColorModeValue("white", "gray.700")}
-          w={{ base: "100%", md: "75%", lg: "50%" }} 
-          mx="auto">
-          
-
+          w={{ base: "100%", md: "75%", lg: "50%" }}
+          mx="auto"
+        >
           <VStack spacing={4}>
             <Input
-              placeholder="Product Name"
+              placeholder="Product Name:"
               name="name"
               value={newProduct.name}
               onChange={(e) =>
@@ -130,14 +127,32 @@ const CreatePage = () => {
             />
 
             <Input
-              placeholder="price"
-              name="Product Price"
+              placeholder="Price:"
+              name="price"
               type="number"
               value={newProduct.price}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, price: e.target.value })
               }
             />
+
+            {/* Image preview box */}
+            {newProduct.image && (
+              <Box
+                maxW="200px"
+                maxH="200px"
+                mx="auto"
+                borderWidth="1px"
+                borderRadius="md"
+                overflow="hidden"
+              >
+                <img
+                  src={newProduct.image}
+                  alt="Preview"
+                  style={{ width: "100%", height: "auto", display: "block" }}
+                />
+              </Box>
+            )}
 
             <HStack w="full" justify="flex-end">
               <Input
