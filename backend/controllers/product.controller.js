@@ -12,25 +12,21 @@ export const getProducts = async (req, res) => {
 }
 
 export const createProduct = async (req, res) => {
-    const { name, price } = req.body; //User input data
-    const file = req.file;
+    const { name, price, image } = req.body; //User input data
 
-    if (!name || !price || !file) {
+    if (!name || !price || !image) {
         return res.status(400).json({ success: false, message: "Please provide all the fields!" });
     }
 
     const newProduct = new Product({
         name,
         price,
-        image: file.path, // Save the file path in the image field
+        image, // Save the image URL directly
     });
 
     try {
         await newProduct.save(); // Save the product to the database
-        // Prepend server URL to image path for frontend access
-        const productWithFullImageUrl = newProduct.toObject();
-        productWithFullImageUrl.image = `${req.protocol}://${req.get('host')}/${newProduct.image}`;
-        res.status(201).json({ success: true, data: productWithFullImageUrl });
+        res.status(201).json({ success: true, data: newProduct });
     } catch (error) {
         console.error("Error creating product:", error);
         res.status(500).json({ success: false, message: "Server error!", error: error.message });
@@ -39,8 +35,7 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
     const { id } = req.params; // Extract the product ID from the request parameters
-    const { name, price } = req.body;
-    const file = req.file;
+    const { name, price, image } = req.body;
 
     // Check if the product ID is valid
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -51,17 +46,11 @@ export const updateProduct = async (req, res) => {
         const updateData = {
             name,
             price,
+            image, // Update image URL directly
         };
 
-        if (file) {
-            updateData.image = file.path; // Update image path if new image uploaded
-        }
-
         const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true }); // Update the product in the database
-        // Prepend server URL to image path for frontend access
-        const productWithFullImageUrl = updatedProduct.toObject();
-        productWithFullImageUrl.image = `${req.protocol}://${req.get('host')}/${updatedProduct.image}`;
-        res.status(200).json({ success: true, message: "Product updated successfully...!", data: productWithFullImageUrl });
+        res.status(200).json({ success: true, message: "Product updated successfully...!", data: updatedProduct });
     } catch (error) {
         console.error("Error in updating product:", error.message);
         res.status(500).json({ success: false, message: "Server error!" });
