@@ -1,5 +1,11 @@
 import Product from "../models/product.model.js"; // Import the Product model
 import mongoose from "mongoose"; // Import mongoose to interact with MongoDB
+import { v2 as cloudinary } from "cloudinary";
+import streamifier from "streamifier";
+
+cloudinary.config({
+  cloudinary_url: process.env.CLOUDINARY_URL,
+});
 
 export const getProducts = async (req, res) => {
     try {
@@ -35,7 +41,8 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
     const { id } = req.params; // Extract the product ID from the request parameters
-    const { name, price, image } = req.body;
+    const { name, price } = req.body;
+    let image = req.body.image;
 
     // Check if the product ID is valid
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -43,17 +50,31 @@ export const updateProduct = async (req, res) => {
     }
 
     try {
+        if (req.file) {
+            const uploadResult = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: "image" },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+            image = uploadResult.secure_url;
+        }
+
         const updateData = {
             name,
             price,
-            image, // Update image URL directly
+            image, // Update image URL or path
         };
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true }); // Update the product in the database
         res.status(200).json({ success: true, message: "Product updated successfully...!", data: updatedProduct });
     } catch (error) {
-        console.error("Error in updating product:", error.message);
-        res.status(500).json({ success: false, message: "Server error!" });
+        console.error("Error in updating product:", error);
+        res.status(500).json({ success: false, message: "Server error!", error: error.message });
     }
 }
 
